@@ -1,14 +1,13 @@
 from pynput.keyboard import Key
 
-INPUT_FP = 0
-INPUT_MAP = {
-    # in order: Left, Right, Dash, Slide, Jump, Respawn, Reset
-    "L": Key.left,
-    "R": Key.right,
-    "D": "z",
-    "S": "x",
-    "J": "c",
-    "K": "r",
-    "RESET": Key.esc,
+Input_Filepath = ''
+Input_Map = {
+    'L': 'a',  # Left
+    'R': 'd',  # Right
+    'D': 'i',  # Dash
+    'S': 's',  # Slide
+    'J': Key.space,  # Jump
+    'K': 'r',  # Respawn
+    'RESET': Key.esc,  # Reset
 }
-FPS = 60
+FPS = 144  # 144 Recommended
