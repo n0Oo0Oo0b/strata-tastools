@@ -16,6 +16,18 @@ Scripts are formatted like so:
 5,D
 5,D,S
 15,S
+
+# repeating inputs
+Repeat 5
+1,R,D
+15,R,S
+1,R,J
+10,R
+EndRepeat
+# will repeat the inputs between repeat and endrepeat 5 times (case insensitive)
+
+# 0 frame inputs will be ignored
+0,R
 ```
 
 ## How to run
@@ -29,6 +41,6 @@ Scripts are formatted like so:
 
 ## Config
 
-- `INPUT_FP` - Filepath of input file to run. Or just use `0` and pipe the input into stdin like I do.
-- `INPUT_MAP` - In-game controls go here.
-- `FPS` - Framerate to run at. Keep this at 60.
+- `Input_Filepath` - Filepath of input file to run. Or just use `0` and pipe the input into stdin like I do.
+- `Input_Map` - In-game controls go here.
+- `FPS` - Framerate to run at. Keep this at 144.
