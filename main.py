@@ -85,33 +85,35 @@ def execute_inputs(inputs: list[InputKeyframeType]) -> None:
     # Execute
     logging.info('Ready')
     current_keys = set()
+    total_duration = 0
 
     while GetWindowText(GetForegroundWindow()) != 'Strata':
-        ...  # Waiting for you to switch to Strata
+        time.sleep(0.1)  # Waiting for you to switch to Strata
     time.sleep(0.2)
 
+    start_time = time.time()
     controller = keyboard.Controller()
     for duration, keys in inputs:
         if GetWindowText(GetForegroundWindow()) != 'Strata':
             logging.warning('Tabbed out of Strata, ending execution')
             break
 
-        start_time = time.time()
         # Release old keys
         for key in current_keys - keys:
             controller.release(key)
         # Press new keys
         for key in keys - current_keys:
             controller.press(key)
-        # Wait until current block ends
-        target_time = start_time + duration / FPS
-        while time.time() < target_time:
+        # Display offset
+        current_time = total_duration / FPS
+        actual_time = time.time() - start_time
+        logging.info(f'Input offset: {current_time - actual_time:.4f}s')
+        # Wait until current keyframe ends
+        total_duration += duration
+        end_time = start_time + total_duration / FPS
+        while time.time() < end_time:
             time.sleep(0.001)
-
         current_keys = keys
-        end_time = time.time()
-        time_taken = (end_time - start_time) * FPS
-        logging.info(f'Input offset: {abs(duration - time_taken):.4f}s')
 
     for key in INPUT_MAP.values():
         controller.release(key)
