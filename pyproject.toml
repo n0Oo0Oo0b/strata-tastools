@@ -2,7 +2,7 @@
 name = "strata-tasools"
 version = "0.1.0"
 description = ""
-authors = []
+authors = ["n0Oo0Oo0b", "Luna"]
 
 [tool.poetry.dependencies]
 python = "^3.11"
