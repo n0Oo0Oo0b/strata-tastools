@@ -1,7 +1,6 @@
 import os
 import time
-from datetime import datetime
-from typing import Literal
+import logging
 
 from pynput import keyboard
 from win32gui import GetWindowText, GetForegroundWindow
@@ -14,25 +13,10 @@ os.system('')  # for console colors
 
 Input_Map = {k.lower(): v for k, v in INPUT_MAP.items()}  # Converts all keys to lowercase
 
+LOG_FORMAT = "[%(asctime)s %(levelname)s] %(message)s"
+logging.basicConfig(format=LOG_FORMAT)
+logging.info("Logger initialized")
 
-def Pretty_Print(Text, Method: Literal['Default', 'Error']):
-    for Line in Text.splitlines():
-        Time = datetime.strftime(datetime.now(), '%d/%m/%Y %H:%M:%S')
-
-        r = 134
-        g = 180
-        b = 43
-
-        if Method == 'Error':
-            r = 175
-            g = 6
-            b = 6
-
-        Color = f'\033[38;2;{r};{g};{b}m'
-
-        Reset = '\033[0m'
-
-        print(f'[{Color}{Time}{Reset}] {Line}')
 
 
 def Read_Inputs():
@@ -41,12 +25,12 @@ def Read_Inputs():
     try:
         open(INPUT_FILEPATH)
     except:
-        Pretty_Print('Incorrect file path.', 'Error')
+        logging.error('Incorrect file path.')
         os.system('pause>nul')
         quit()
 
     if INPUT_FILEPATH[-4:] != '.tas':
-        Pretty_Print('File extension must be .tas', 'Error')
+        logging.error('File extension must be .tas')
         os.system('pause>nul')
         quit()
 
@@ -79,7 +63,7 @@ def Read_Inputs():
             try:
                 keys = {INPUT_MAP[key.strip().lower()] for key in keys}
             except:
-                Pretty_Print(f'Incorrect keybind used in inputs {keys}', 'Error')
+                logging.error(f'Incorrect keybind used in inputs {keys}')
                 os.system('pause>nul')
                 quit()
 
@@ -89,7 +73,7 @@ def Read_Inputs():
             inputs.append((int(duration), keys))
 
     if Repeat is True:
-        Pretty_Print('No EndRepeat after Repeat.', 'Error')
+        logging.error('No EndRepeat after Repeat.')
         os.system('pause>nul')
         quit()
 
@@ -102,7 +86,7 @@ def main():
     # Execute
     current_keys = set()
 
-    Pretty_Print('Ready', 'Default')
+    logging.info('Ready')
 
     while GetWindowText(GetForegroundWindow()) != 'Strata':
         ...  # Waiting for you to switch to Strata
@@ -110,7 +94,7 @@ def main():
 
     for duration, keys in inputs:
         if GetWindowText(GetForegroundWindow()) != 'Strata':
-            Pretty_Print('Tabbed out of Strata.', 'Error')
+            logging.warning('Tabbed out of Strata.')
             os.system('pause>nul')
             quit()
 
@@ -135,12 +119,12 @@ def main():
         end_time = time.time()
 
         Time_Taken = (end_time - start_time) * FPS
-        Pretty_Print(f'Input offset: {abs(duration - Time_Taken):.4f}s', 'Default')
+        logging.info(f'Input offset: {abs(duration - Time_Taken):.4f}s')
 
     for key in current_keys:
         KC.release(key)
 
-    Pretty_Print('Finished', 'Default')
+    logging.info('Finished')
 
 
 if __name__ == '__main__':
