@@ -9,8 +9,6 @@ from win32gui import GetWindowText, GetForegroundWindow
 
 from config import INPUT_FILEPATH, INPUT_MAP, FPS
 
-KC = keyboard.Controller()
-
 KeyType = str | keyboard.Key
 InputKeyframeType = tuple[int, set[KeyType]]
 
@@ -68,6 +66,7 @@ def parse_lines(lines: Iterator[str]) -> list[InputKeyframeType]:
     if repeating_count:
         logging.error("Unfinished REPEAT")
         raise ValueError("Unfinished REPEAT")
+    result.append((0, set()))
     return result
 
 
@@ -84,18 +83,16 @@ def read_inputs(fp: str | Path) -> list[InputKeyframeType]:
     return inputs
 
 
-def main():
-    inputs = read_inputs(INPUT_FILEPATH)
-
+def execute_inputs(inputs: list[InputKeyframeType]) -> None:
     # Execute
-    current_keys = set()
-
     logging.info('Ready')
+    current_keys = set()
 
     while GetWindowText(GetForegroundWindow()) != 'Strata':
         ...  # Waiting for you to switch to Strata
     time.sleep(0.2)
 
+    controller = keyboard.Controller()
     for duration, keys in inputs:
         if GetWindowText(GetForegroundWindow()) != 'Strata':
             logging.warning('Tabbed out of Strata.')
@@ -103,32 +100,28 @@ def main():
             quit()
 
         start_time = time.time()
-
         # Release old keys
         for key in current_keys - keys:
-            KC.release(key)
-
+            controller.release(key)
         # Press new keys
         for key in keys - current_keys:
-            KC.press(key)
-
+            controller.press(key)
         # Wait until current block ends
         target_time = start_time + duration / FPS
-
         while time.time() < target_time:
             time.sleep(0.001)
 
         current_keys = keys
-
         end_time = time.time()
-
-        Time_Taken = (end_time - start_time) * FPS
-        logging.info(f'Input offset: {abs(duration - Time_Taken):.4f}s')
-
-    for key in current_keys:
-        KC.release(key)
+        time_taken = (end_time - start_time) * FPS
+        logging.info(f'Input offset: {abs(duration - time_taken):.4f}s')
 
     logging.info('Finished')
+
+
+def main() -> None:
+    inputs = read_inputs(INPUT_FILEPATH)
+    execute_inputs(inputs)
 
 
 if __name__ == '__main__':
