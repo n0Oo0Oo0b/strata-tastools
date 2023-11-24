@@ -18,7 +18,7 @@ Scripts are formatted like so:
 15,S
 
 # repeating inputs
-Repeat 5
+Repeat,5
 1,R,D
 15,R,S
 1,R,J
