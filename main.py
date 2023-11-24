@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 import time
 import logging
 
@@ -18,27 +19,23 @@ logging.basicConfig(format=LOG_FORMAT)
 logging.info("Logger initialized")
 
 
-
-def Read_Inputs():
-    inputs = []
+def Read_Inputs(fp: str | Path):
+    path = Path(fp)
+    if path.suffix != ".tas":
+        logging.warning("File extension is not .tas")
 
     try:
-        open(INPUT_FILEPATH)
-    except:
-        logging.error('Incorrect file path.')
-        os.system('pause>nul')
-        quit()
+        path.open()
+    except (OSError, IOError) as e:
+        logging.error(f"Error while reading input file: {e}")
+        raise
 
-    if INPUT_FILEPATH[-4:] != '.tas':
-        logging.error('File extension must be .tas')
-        os.system('pause>nul')
-        quit()
-
+    inputs = []
     Repeat = False
     Repeat_Count = 1
     Repeating = []
 
-    with open(INPUT_FILEPATH) as file:
+    with path.open() as file:
         for line in file:
             line = line.strip()
 
@@ -81,7 +78,7 @@ def Read_Inputs():
 
 
 def main():
-    inputs = Read_Inputs()
+    inputs = Read_Inputs(INPUT_FILEPATH)
 
     # Execute
     current_keys = set()
