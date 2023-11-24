@@ -1,4 +1,5 @@
 import logging
+import os
 import time
 from pathlib import Path
 from typing import Iterator
@@ -14,7 +15,7 @@ INPUT_MAP = {i.lower(): INPUT_MAP[i] for i in list(INPUT_MAP)}  # Converts keys 
 KeyType = str | keyboard.Key
 InputKeyframeType = tuple[int, set[KeyType]]
 
-#  Initializes colored logs (pure logging is only red ;-;)
+#  Initializes colored logs
 LOG_FORMAT = '  %(log_color)s%(levelname)-7s%(reset)s | %(log_color)s%(message)s%(reset)s'
 logging.root.setLevel(logging.DEBUG)
 stream = logging.StreamHandler()
@@ -24,11 +25,13 @@ logging.root.addHandler(stream)
 
 def try_int(num: str, fail_message: str) -> int:
     try:
+        int(num)
         return int(num)
 
     except ValueError:
-        logging.error(fail_message)
-        raise
+        logging.error(f'{fail_message} ("{num}")')
+        os.system('pause>nul')
+        quit()
 
 
 def parse_inputs(input_names: list[str], lineno: int) -> set[KeyType]:
@@ -40,8 +43,9 @@ def parse_inputs(input_names: list[str], lineno: int) -> set[KeyType]:
 
         key = INPUT_MAP.get(name)
         if key is None:
-            logging.error(f"Invalid input name on line {lineno}: {name}")
-            raise ValueError(f"Invalid input name: {name}")
+            logging.error(f'Invalid input name on line {lineno}: {name}')
+            os.system('pause>nul')
+            quit()
         result.add(key)
 
     return result
@@ -53,28 +57,29 @@ def parse_lines(lines: Iterator[str]) -> list[InputKeyframeType]:
     current_repeat: list[InputKeyframeType] = []
 
     for lineno, line in enumerate(lines, 1):
-        parts = [part.strip() for part in line.split(",")]
+        parts = [part.strip().lower() for part in line.split(',')]
 
         match parts:
-            case ():  # empty line
+            case '',:  # empty line
                 continue
 
-            case first, *_ if first.startswith("#"):
+            case first, *_ if first.startswith('#'):
                 continue
 
-            case "REPEAT", count_str:
+            case 'repeat', count_str:
                 if repeating_count:
-                    logging.error("Nested repeats are not supported")
-                    raise ValueError("Nested repeats are not supported")
-                repeating_count = try_int(count_str, "Repeat count must be an integer")
+                    logging.error('Nested repeats are not supported')
+                    os.system('pause>nul')
+                    quit()
+                repeating_count = try_int(count_str, 'Repeat count must be an integer')
                 current_repeat = []
 
-            case "ENDREPEAT", :
+            case 'endrepeat',:
                 result += current_repeat * repeating_count
                 repeating_count = 0
 
             case duration_str, *input_names:
-                duration = try_int(duration_str, "Duration must be an integer")
+                duration = try_int(duration_str, 'Duration must be an integer')
                 inputs = parse_inputs(input_names, lineno)
                 if not repeating_count:
                     result.append((duration, inputs))
@@ -82,22 +87,25 @@ def parse_lines(lines: Iterator[str]) -> list[InputKeyframeType]:
                     current_repeat.append((duration, inputs))
 
     if repeating_count:
-        logging.error("Unfinished REPEAT")
-        raise ValueError("Unfinished REPEAT")
+        logging.error('Unfinished Repeat')
+        os.system('pause>nul')
+        quit()
 
     return result
 
 
 def read_inputs(fp: str | Path) -> list[InputKeyframeType]:
     path = Path(fp)
-    if path.suffix != ".tas":
-        logging.warning("File extension is not .tas")
+    if path.suffix != '.tas':
+        logging.warning('File extension is not .tas')
 
     try:
         inputs = parse_lines(path.open())
+
     except (OSError, IOError) as e:
-        logging.error(f"Error while reading input file: {e}")
-        raise
+        logging.error(f'Error while reading input file: {e}')
+        os.system('pause>nul')
+        quit()
 
     return inputs
 
@@ -130,7 +138,7 @@ def execute_inputs(inputs: list[InputKeyframeType]) -> None:
         # Display offset
         current_time = total_duration / FPS
         actual_time = time.time() - start_time
-        logging.info(f'Input offset: {current_time - actual_time:.4f}s (line {line + 1})')
+        logging.debug(f'Input offset: {current_time - actual_time:.4f}s (line {line + 1})')
 
         # Wait until current keyframe ends
         total_duration += duration
