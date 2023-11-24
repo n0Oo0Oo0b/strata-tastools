@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 import time
 import logging
+from typing import Iterator
 
 from pynput import keyboard
 from win32gui import GetWindowText, GetForegroundWindow
@@ -10,70 +11,76 @@ from config import INPUT_FILEPATH, INPUT_MAP, FPS
 
 KC = keyboard.Controller()
 
-os.system('')  # for console colors
-
-Input_Map = {k.lower(): v for k, v in INPUT_MAP.items()}  # Converts all keys to lowercase
+KeyType = str | keyboard.Key
+InputKeyframeType = tuple[int, set[KeyType]]
 
 LOG_FORMAT = "[%(asctime)s %(levelname)s] %(message)s"
 logging.basicConfig(format=LOG_FORMAT)
 logging.info("Logger initialized")
 
 
-def read_inputs(fp: str | Path):
+def try_int(num: str, fail_message: str) -> int:
+    try:
+        return int(num)
+    except ValueError:
+        logging.error(fail_message)
+        raise
+
+
+def parse_inputs(input_names: list[str], lineno: int) -> set[KeyType]:
+    result = set()
+    for name in input_names:
+        key = INPUT_MAP.get(name)
+        if key is None:
+            logging.error(f"Invalid input name on line {lineno}: {name}")
+            raise ValueError(f"Invalid input name: {name}")
+        result.add(key)
+    return result
+
+
+def parse_lines(lines: Iterator[str]) -> list[InputKeyframeType]:
+    result = []
+    repeating_count: int = 0  # 0 for not repeating, [repeat count] for repeating
+    current_repeat: list[InputKeyframeType] = []
+    for lineno, line in enumerate(lines, 1):
+        parts = [part.strip() for part in line.split(",")]
+        match parts:
+            case ():  # empty line
+                continue
+            case first, *_ if first.startswith("#"):
+                continue
+            case "REPEAT", count_str:
+                if repeating_count:
+                    logging.error("Nested repeats are not supported")
+                    raise ValueError("Nested repeats are not supported")
+                repeating_count = try_int(count_str, "Repeat count must be an integer")
+                current_repeat = []
+            case "ENDREPEAT", :
+                result += current_repeat * repeating_count
+                repeating_count = 0
+            case duration_str, *input_names:
+                duration = try_int(duration_str, "Duration must be an integer")
+                inputs = parse_inputs(input_names, lineno)
+                if not repeating_count:
+                    result.append((duration, inputs))
+                else:
+                    current_repeat.append((duration, inputs))
+    if repeating_count:
+        logging.error("Unfinished REPEAT")
+        raise ValueError("Unfinished REPEAT")
+    return result
+
+
+def read_inputs(fp: str | Path) -> list[InputKeyframeType]:
     path = Path(fp)
     if path.suffix != ".tas":
         logging.warning("File extension is not .tas")
 
     try:
-        path.open()
+        inputs = parse_lines(path.open())
     except (OSError, IOError) as e:
         logging.error(f"Error while reading input file: {e}")
         raise
-
-    inputs = []
-    repeat = False
-    repeat_count = 1
-    repeating_block = []
-
-    with path.open() as file:
-        for line in file:
-            line = line.strip()
-
-            if line == '' or line.startswith('#') or line.startswith('0,'):
-                continue
-
-            if line.lower().startswith('repeat'):
-                repeat = True
-                repeat_count = int(line.lower().removeprefix('repeat '))
-                continue
-            elif line.lower().startswith('endrepeat'):
-                for _ in range(repeat_count - 1):
-                    for i in repeating_block:
-                        inputs.append(i)
-                repeat = False
-                repeat_count = 1
-                repeating_block = []
-                continue
-
-            duration, *keys = line.split(',')
-
-            try:
-                keys = {INPUT_MAP[key.strip().lower()] for key in keys}
-            except:
-                logging.error(f'Incorrect keybind used in inputs {keys}')
-                os.system('pause>nul')
-                quit()
-
-            if repeat:
-                repeating_block.append((int(duration), keys))
-
-            inputs.append((int(duration), keys))
-
-    if repeat:
-        logging.error('No EndRepeat after Repeat.')
-        os.system('pause>nul')
-        quit()
-
     return inputs
 
 
