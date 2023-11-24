@@ -1,8 +1,8 @@
 [tool.poetry]
-name = "minimal-python-project-boilerplate"
+name = "strata-tasools"
 version = "0.1.0"
 description = ""
-authors = ["yukiyan <wakayama0215@gmail.com>"]
+authors = []
 
 [tool.poetry.dependencies]
 python = "^3.11"
