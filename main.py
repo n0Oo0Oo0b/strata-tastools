@@ -27,6 +27,8 @@ def try_int(num: str, fail_message: str) -> int:
 def parse_inputs(input_names: list[str], lineno: int) -> set[KeyType]:
     result = set()
     for name in input_names:
+        if not name:
+            continue
         key = INPUT_MAP.get(name)
         if key is None:
             logging.error(f"Invalid input name on line {lineno}: {name}")
