@@ -36,11 +36,11 @@ EndRepeat
 2. `cd` into project root
 3. Change config (in [config.py](config.py)) to your liking (see config section)
 4. `python main.py`
-5. When `Ready` appears, tab into the game (I know, very sophisticated)
+5. When `Ready` appears, tab into the game
 6. Enjoy
 
 ## Config
 
-- `Input_Filepath` - Filepath of input file to run. Or just use `0` and pipe the input into stdin like I do.
-- `Input_Map` - In-game controls go here.
+- `INPUT_FILEPATH` - Filepath of input file to run. Or just use `0` and pipe the input into stdin like I do.
+- `INPUT_MAP` - In-game controls go here.
 - `FPS` - Framerate to run at. Keep this at 144.
