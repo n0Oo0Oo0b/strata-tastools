@@ -65,7 +65,6 @@ def parse_lines(lines: Iterator[str]) -> list[InputKeyframeType]:
     if repeating_count:
         logging.error("Unfinished REPEAT")
         raise ValueError("Unfinished REPEAT")
-    result.append((0, set()))
     return result
 
 
@@ -94,9 +93,8 @@ def execute_inputs(inputs: list[InputKeyframeType]) -> None:
     controller = keyboard.Controller()
     for duration, keys in inputs:
         if GetWindowText(GetForegroundWindow()) != 'Strata':
-            logging.warning('Tabbed out of Strata.')
-            os.system('pause>nul')
-            quit()
+            logging.warning('Tabbed out of Strata, ending execution')
+            break
 
         start_time = time.time()
         # Release old keys
@@ -114,6 +112,9 @@ def execute_inputs(inputs: list[InputKeyframeType]) -> None:
         end_time = time.time()
         time_taken = (end_time - start_time) * FPS
         logging.info(f'Input offset: {abs(duration - time_taken):.4f}s')
+
+    for key in INPUT_MAP.values():
+        controller.release(key)
 
     logging.info('Finished')
 
