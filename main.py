@@ -19,7 +19,7 @@ logging.basicConfig(format=LOG_FORMAT)
 logging.info("Logger initialized")
 
 
-def Read_Inputs(fp: str | Path):
+def read_inputs(fp: str | Path):
     path = Path(fp)
     if path.suffix != ".tas":
         logging.warning("File extension is not .tas")
@@ -31,9 +31,9 @@ def Read_Inputs(fp: str | Path):
         raise
 
     inputs = []
-    Repeat = False
-    Repeat_Count = 1
-    Repeating = []
+    repeat = False
+    repeat_count = 1
+    repeating_block = []
 
     with path.open() as file:
         for line in file:
@@ -43,16 +43,16 @@ def Read_Inputs(fp: str | Path):
                 continue
 
             if line.lower().startswith('repeat'):
-                Repeat = True
-                Repeat_Count = int(line.lower().removeprefix('repeat '))
+                repeat = True
+                repeat_count = int(line.lower().removeprefix('repeat '))
                 continue
             elif line.lower().startswith('endrepeat'):
-                for _ in range(Repeat_Count - 1):
-                    for i in Repeating:
+                for _ in range(repeat_count - 1):
+                    for i in repeating_block:
                         inputs.append(i)
-                Repeat = False
-                Repeat_Count = 1
-                Repeating = []
+                repeat = False
+                repeat_count = 1
+                repeating_block = []
                 continue
 
             duration, *keys = line.split(',')
@@ -64,12 +64,12 @@ def Read_Inputs(fp: str | Path):
                 os.system('pause>nul')
                 quit()
 
-            if Repeat:
-                Repeating.append((int(duration), keys))
+            if repeat:
+                repeating_block.append((int(duration), keys))
 
             inputs.append((int(duration), keys))
 
-    if Repeat is True:
+    if repeat:
         logging.error('No EndRepeat after Repeat.')
         os.system('pause>nul')
         quit()
@@ -78,7 +78,7 @@ def Read_Inputs(fp: str | Path):
 
 
 def main():
-    inputs = Read_Inputs(INPUT_FILEPATH)
+    inputs = read_inputs(INPUT_FILEPATH)
 
     # Execute
     current_keys = set()
