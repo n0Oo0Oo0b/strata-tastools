@@ -6,13 +6,13 @@ from typing import Literal
 from pynput import keyboard
 from win32gui import GetWindowText, GetForegroundWindow
 
-from config import Input_Filepath, Input_Map, FPS
+from config import INPUT_FILEPATH, INPUT_MAP, FPS
 
 KC = keyboard.Controller()
 
 os.system('')  # for console colors
 
-Input_Map = {k.lower(): v for k, v in Input_Map.items()}  # Converts all keys to lowercase
+Input_Map = {k.lower(): v for k, v in INPUT_MAP.items()}  # Converts all keys to lowercase
 
 
 def Pretty_Print(Text, Method: Literal['Default', 'Error']):
@@ -39,13 +39,13 @@ def Read_Inputs():
     inputs = []
 
     try:
-        open(Input_Filepath)
+        open(INPUT_FILEPATH)
     except:
         Pretty_Print('Incorrect file path.', 'Error')
         os.system('pause>nul')
         quit()
 
-    if Input_Filepath[-4:] != '.tas':
+    if INPUT_FILEPATH[-4:] != '.tas':
         Pretty_Print('File extension must be .tas', 'Error')
         os.system('pause>nul')
         quit()
@@ -54,7 +54,7 @@ def Read_Inputs():
     Repeat_Count = 1
     Repeating = []
 
-    with open(Input_Filepath) as file:
+    with open(INPUT_FILEPATH) as file:
         for line in file:
             line = line.strip()
 
@@ -77,7 +77,7 @@ def Read_Inputs():
             duration, *keys = line.split(',')
 
             try:
-                keys = {Input_Map[key.strip().lower()] for key in keys}
+                keys = {INPUT_MAP[key.strip().lower()] for key in keys}
             except:
                 Pretty_Print(f'Incorrect keybind used in inputs {keys}', 'Error')
                 os.system('pause>nul')

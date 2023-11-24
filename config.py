@@ -1,7 +1,7 @@
 from pynput.keyboard import Key
 
-Input_Filepath = ''
-Input_Map = {
+INPUT_FILEPATH = ''
+INPUT_MAP = {
     'L': 'a',  # Left
     'R': 'd',  # Right
     'D': 'i',  # Dash
